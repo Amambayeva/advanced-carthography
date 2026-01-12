@@ -12,11 +12,5 @@ Purpose: Access to high-speed broadband is a key prerequisite for technology sha
 The map is intended as an exploratory tool that helps users understand how access to digital infrastructure varies worldwide.
 
 Target group: 
-The map is designed for:
-•	Non-expert to semi-expert users
-•	Students, researchers, and policy-interested users
-•	Users with basic map literacy but no technical background in telecommunications
-The design assumes users want to:
-•	Quickly compare countries
-•	Identify global and regional disparities
-•	Explore differences in broadband access capacity
+The map is designed for: Non-expert to semi-expert users, Students, researchers, and policy-interested users, Users with basic map literacy but no technical background in telecommunications
+The design assumes users want to: Quickly compare countries; Identify global and regional disparities; Explore differences in broadband access capacity
