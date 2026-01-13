@@ -1,0 +1,20 @@
+#Version 0 + Feedback Session 1
+
+##Map Layout Proposal
+
+###Title: Global Fixed Broadband Access per 100 Inhabitants (2022)
+
+Undertitle: This map illustrates progress toward SDG 17: Partnerships for the Goals, specifically Target 17.6, which promotes international cooperation and access to information and communication technologies.
+Why it matters: Broadband access is critical for economic growth, education, healthcare, and innovation. Countries with higher connectivity can better participate in the global digital economy, while limited access creates inequalities and slows development. Mapping broadband subscriptions reveals where partnerships and investment are most needed.
+
+Infographic using Florish was created: data was used from csv file where the amount of broadbandcast above 40. 
+Inforgraphic: ![Infographic](images0/infofraphic.png)
+
+Normalization: not needed. alsready normalized data used per 100 Inhabitants data. The 3 kind of broadbands where merged in ANY value for showing all free of them. 
+
+Design Approuch: using color-graduated color to show the most fast and slowest broadbandcast from dark purple to light pink. Natural breaks. 
+
+Map: ![Broadband Map](images0/broadband2022.png.png)
+
+Feeadback: 
+
