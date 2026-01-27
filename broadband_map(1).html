@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG 17: Global Broadband Access per 100 Inhabitants</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+        .info-header {
+            background: linear-gradient(135deg, #4a1c40 0%, #1e5a7a 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .info-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .info-header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+        #map {
+            margin-top: 80px;
+            height: calc(100vh - 80px);
+        }
+        .legend {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            line-height: 20px;
+        }
+        .legend h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.8;
+        }
+        .legend div {
+            margin-bottom: 5px;
+            clear: both;
+        }
+        .leaflet-popup-content {
+            font-size: 14px;
+            min-width: 200px;
+        }
+        .leaflet-popup-content h3 {
+            margin: 0 0 10px 0;
+            color: #1e5a7a;
+        }
+        .leaflet-popup-content p {
+            margin: 5px 0;
+        }
+        .broadband-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a1c40;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-header">
+        <h1>SDG 17: Partnerships for the Goals</h1>
+        <p>Global Fixed Broadband Access per 100 Inhabitants (2022)</p>
+    </div>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([20, 0], 2);
+
+        // Add grayscale tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CARTO | Data: World Bank, Sustainable Development Goals (SDGs) Databank',
+            maxZoom: 18,
+        }).addTo(map);
+
+        // Color scheme based on broadband speed categories
+        function getColor(value) {
+            if (value === null) return '#cccccc';
+            return value > 72 ? '#4a1c40' :
+                   value > 44 ? '#6b2c5c' :
+                   value > 30 ? '#8b4c7d' :
+                   value > 18 ? '#a67ca8' :
+                   value > 8  ? '#c0acd0' :
+                                '#e8ddf0';
+        }
+
+        // Broadband data for countries
+        const broadbandData = {
+            // Top 10 Most Connected (>44)
+            'Monaco': 50, 'Liechtenstein': 50, 'France': 48, 'Switzerland': 47, 
+            'Norway': 46, 'South Korea': 46, 'Republic of Korea': 46, 'Denmark': 45, 'Belgium': 45, 
+            'Germany': 45, 'Malta': 44,
+            
+            // High connectivity (30-44)
+            'Netherlands': 43, 'United Kingdom': 42, 'Spain': 40, 'Sweden': 42,
+            'Luxembourg': 42, 'Iceland': 41, 'Canada': 42, 'United States of America': 38,
+            'Finland': 40, 'Estonia': 38, 'Japan': 37, 'Australia': 36,
+            'New Zealand': 38, 'Austria': 40, 'Portugal': 38, 'Ireland': 39,
+            'Italy': 36, 'Slovenia': 38, 'Czech Republic': 36, 'Czechia': 36, 'Poland': 32,
+            'Greece': 34, 'Slovakia': 33, 'Lithuania': 35, 'Latvia': 34,
+            'Croatia': 32, 'Hungary': 34, 'Romania': 30, 'Bulgaria': 31,
+            
+            // Medium connectivity (18-30)
+            'Chile': 28, 'Uruguay': 26, 'Argentina': 24, 'Russia': 26, 'Russian Federation': 26,
+            'Kazakhstan': 22, 'Turkey': 24, 'Israel': 30, 'United Arab Emirates': 28,
+            'Saudi Arabia': 24, 'Qatar': 26, 'Bahrain': 28, 'Kuwait': 25,
+            'Malaysia': 26, 'Thailand': 22, 'China': 28, 'Brazil': 20,
+            'Mexico': 22, 'Costa Rica': 24, 'Panama': 23, 'Colombia': 20,
+            'Peru': 18, 'Ecuador': 18, 'Serbia': 26, 'Montenegro': 24,
+            'North Macedonia': 23, 'Republic of Macedonia': 23, 'Albania': 22, 'Bosnia and Herzegovina': 22,
+            'Ukraine': 24, 'Belarus': 25, 'Georgia': 23, 'Armenia': 21,
+            'Azerbaijan': 22, 'Iran': 20, 'Jordan': 19, 'Lebanon': 20,
+            'Tunisia': 18, 'Algeria': 18, 'Egypt': 18, 'South Africa': 18,
+            
+            // Lower connectivity (8-18)
+            'Morocco': 16, 'Libya': 14, 'Mauritius': 16, 'Seychelles': 15,
+            'Botswana': 12, 'Namibia': 11, 'India': 14, 'Indonesia': 16,
+            'Philippines': 15, 'Vietnam': 17, 'Viet Nam': 17, 'Sri Lanka': 12, 'Mongolia': 14,
+            'Pakistan': 10, 'Bangladesh': 12, 'Nepal': 9, 'Myanmar': 8,
+            'Cambodia': 10, 'Laos': 9, 'Bolivia': 12, 'Paraguay': 14,
+            'Venezuela': 11, 'Guatemala': 10, 'Honduras': 9, 'Nicaragua': 8,
+            'El Salvador': 10, 'Jamaica': 12, 'Dominican Republic': 13,
+            'Trinidad and Tobago': 15, 'Barbados': 16, 'Kenya': 10,
+            'Ghana': 9, 'Nigeria': 8, 'Senegal': 9, 'Ivory Coast': 8, 'Côte d\'Ivoire': 8,
+            
+            // Very low connectivity (0-8)
+            'Ethiopia': 5, 'Tanzania': 5, 'United Republic of Tanzania': 5, 'Uganda': 6, 'Mozambique': 4,
+            'Madagascar': 3, 'Zambia': 6, 'Zimbabwe': 5, 'Malawi': 4,
+            'Rwanda': 7, 'Burundi': 3, 'Mali': 4, 'Burkina Faso': 3,
+            'Niger': 2, 'Chad': 2, 'Sudan': 5, 'South Sudan': 1,
+            'Somalia': 2, 'Yemen': 4, 'Afghanistan': 3, 'Haiti': 2,
+            'Papua New Guinea': 5, 'Timor-Leste': 3, 'East Timor': 3,
+            
+            // No data available (shown as null)
+            'North Korea': null, 'Democratic People\'s Republic of Korea': null, 
+            'Syria': null, 'Syrian Arab Republic': null, 'Western Sahara': null,
+            'Eritrea': null, 'Turkmenistan': null
+        };
+
+        // Regional averages (for reference)
+        const regionalAverages = {
+            'Western Europe': 42,
+            'Northern America': 40,
+            'Eastern Europe': 35,
+            'Australia and New Zealand': 37,
+            'Southern Europe': 35,
+            'Eastern Asia': 32,
+            'Eastern Europe': 28,
+            'Latin America and the Caribbean': 22,
+            'Western Asia': 24,
+            'Oceania': 18,
+            'South-eastern Asia': 16,
+            'Central Asia': 15,
+            'Northern Africa': 12,
+            'Southern Asia': 10,
+            'Melanesia': 6,
+            'Micronesia': 5,
+            'Sub-Saharan Africa': 4
+        };
+
+        // Load GeoJSON data for country polygons
+        fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: function(feature) {
+                        const countryName = feature.properties.name;
+                        const value = broadbandData[countryName];
+                        return {
+                            fillColor: getColor(value),
+                            weight: 1,
+                            opacity: 1,
+                            color: 'white',
+                            fillOpacity: 0.8
+                        };
+                    },
+                    onEachFeature: function(feature, layer) {
+                        const countryName = feature.properties.name;
+                        const value = broadbandData[countryName];
+                        
+                        const popupContent = `
+                            <h3>${countryName}</h3>
+                            <p><strong>Broadband Subscriptions:</strong></p>
+                            <p class="broadband-value">${value !== null && value !== undefined ? value + ' per 100 inhabitants' : 'No data available'}</p>
+                            ${value !== null && value !== undefined ? `<p><em>Category: ${getCategory(value)}</em></p>` : ''}
+                        `;
+                        
+                        layer.bindPopup(popupContent);
+                        
+                        // Add hover effect
+                        layer.on({
+                            mouseover: function(e) {
+                                const layer = e.target;
+                                layer.setStyle({
+                                    weight: 2,
+                                    color: '#666',
+                                    fillOpacity: 0.9
+                                });
+                            },
+                            mouseout: function(e) {
+                                const layer = e.target;
+                                layer.setStyle({
+                                    weight: 1,
+                                    color: 'white',
+                                    fillOpacity: 0.8
+                                });
+                            }
+                        });
+                    }
+                }).addTo(map);
+            });
+
+        // Helper function to get category
+        function getCategory(value) {
+            if (value > 72) return '72+ (Highest)';
+            if (value > 44) return '44-72 (Very High)';
+            if (value > 30) return '30-44 (High)';
+            if (value > 18) return '18-30 (Medium)';
+            if (value > 8) return '8-18 (Low)';
+            return '0-8 (Very Low)';
+        }
+
+        // Add legend
+        const legend = L.control({position: 'bottomright'});
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = '<h4>Broadband per 100 Inhabitants</h4>';
+            const grades = [0, 8, 18, 30, 44, 72];
+            const labels = ['0-8', '8-18', '18-30', '30-44', '44-72', '72+'];
+            
+            for (let i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<div><i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    labels[i] + '</div>';
+            }
+            div.innerHTML += '<div><i style="background:#cccccc"></i> No data</div>';
+            return div;
+        };
+        legend.addTo(map);
+    </script>
+</body>
+</html>
